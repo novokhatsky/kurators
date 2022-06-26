@@ -8,6 +8,7 @@ BASE_DIR = "d:\\tmp\\rubcov\\большие\\"
 PPR = BASE_DIR + "пэн-ппр\\ППР.xlsx"
 PEN = BASE_DIR + "пэн-ппр\\ПЭН.xlsx"
 
+PPR_INDEX = [38, 39, 40, 41, 50, 51, 52, 53, 54, 55, 91, 92, 93, 94, 95, 96, 97, 98]
 
 def dictForSave(i):
     temp = {}
@@ -61,14 +62,32 @@ files_kurators = filesKurators(BASE_DIR)
 fl = files_kurators[1]
 
 print(fl)
-kurator = makeDict(fl)
 
-for key in kurator:
-    if key in ppr_dict:
-        print('found ppr key={0} 1={1}'.format(key, ppr_dict[key][0]))
+wb = load_workbook(fl, read_only = True)
+sh = wb.active
+data = {} 
+
+# нужно пропустить три строки
+enable_add = False
+for row in sh.iter_rows():
+
+    if row[0].value == 'Идентификатор':
+        enable_add = True
+        continue
+
+    if enable_add:
+        key = row[0].value
+
+        if key in ppr_dict:
+            print(key)
+            # есть идентификатор в ппр
+            for index in PPR_INDEX:
+                print('{0} = {1}'.format(index + 1, ppr_dict[index + 1]))
 
 
+#       data[row[0].value] = [cell.value for cell in row]
 
+#wb.save(fl)
 # ппр 38-41 50-55 91-98 AL-AM-AN-AO AX-AY-AZ-BA-BB-DC CM-CN-CO-CP-CQ-CR-CS-CT
 # пэн 35-37 42-49 74-90
 
