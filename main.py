@@ -100,6 +100,8 @@ for fl in files_kurators:
                     out_log("в поле {0} вставлено значение {1}".format(index, ppr_dict[key][index - 1]))
 
                     row[index - 1].value = ppr_dict[key][index - 1]
+            else:
+                out_log("идентификатор {0} не найден в ППР".format(key))
 
             if key in pen_dict:
                 # есть идентификатор в ппр
@@ -109,10 +111,13 @@ for fl in files_kurators:
                     out_log("в поле {0} вставлено значение {1}".format(index, pen_dict[key][index - 1]))
 
                     row[index - 1].value = pen_dict[key][index - 1]
+            else:
+                out_log("идентификатор {0} не найден в ПЭН".format(key))
 
-    print("save {0}".format(makeOut(fl)))
-    out_log("запись {0}".format(makeOut(fl)))
-    wb.save(makeOut(fl))
+    out_filename = makeOut(fl)
+    print("save {0}".format(out_filename))
+    out_log("запись {0}".format(out_filename))
+    wb.save(out_filename)
 
 # ппр 38-41 50-55 91-98 AL-AM-AN-AO AX-AY-AZ-BA-BB-DC CM-CN-CO-CP-CQ-CR-CS-CT
 # пэн 35-37 42-49 74-90
