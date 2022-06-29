@@ -126,8 +126,7 @@ for fl in files_kurators:
 filesInput = listFiles(BASE_OUT)
 theOneFile = BASE_OUT + 'out_all.xlsx'
 
-theOne = Workbook()
-del theOne['Sheet']
+theOne = Workbook(write_only = True)
 o = theOne.create_sheet('ПЭН_ППР сокращ')
 safeTitle = o.title
 
@@ -147,18 +146,7 @@ for oneFile in filesInput:
         
         if i < 4:
             continue
-
-        for cell in row:
-            newCell = newSheet.cell(row = row_index, column = cell.col_idx, value = cell.value)
-
-            if cell.has_style:
-                newCell.font = copy(cell.font)
-                newCell.border = copy(cell.border)
-                newCell.fill = copy(cell.fill)
-                newCell.number_format = copy(cell.number_format)
-                newCell.protection = copy(cell.protection)
-                newCell.alignment = copy(cell.alignment)
-
+        newSheet.append(row)
         row_index += 1
 
     keep3row = False
