@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from openpyxl import load_workbook
+from openpyxl import load_workbook, Workbook
 import os
 import logging
+from copy import copy
 
-BASE_DIR = "d:\\tmp\\rubcov\\большие\\"
-PREFIX_OUT = "out_"
+#BASE_DIR = "d:\\work\\in\\"
+#BASE_OUT = "d:\\work\\out\\"
+BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
+BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
 
 PPR = BASE_DIR + "пэн-ппр\\ППР.xlsx"
 PEN = BASE_DIR + "пэн-ппр\\ПЭН.xlsx"
@@ -13,7 +16,7 @@ PEN = BASE_DIR + "пэн-ппр\\ПЭН.xlsx"
 PPR_INDEX = [38, 39, 40, 41, 50, 51, 52, 53, 54, 55, 91, 92, 93, 94, 95, 96, 97, 98]
 PEN_INDEX = [35, 36, 37, 42, 43, 44, 45, 46, 47, 48, 49, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90]
 
-LOG_FILE = "process.log"
+LOG_FILE = BASE_DIR + "process.log"
 
 logging.basicConfig(format = u'[%(asctime)s] %(message)s', level = logging.INFO, filename = LOG_FILE)
 
@@ -24,9 +27,8 @@ def out_log(mess):
 
 def makeOut(filename):
     el = filename.split("\\")
-    el[-1] = PREFIX_OUT + el[-1]
 
-    return "\\".join(el)
+    return BASE_OUT + el[-1]
 
 def makeDict(filename):
     wb = load_workbook(filename, read_only = True)
@@ -47,7 +49,7 @@ def makeDict(filename):
     return data
 
 
-def filesKurators(base_dir):
+def listFiles(base_dir):
     # формируем список файлов с заданной маской в директории
     spisok_file = []
     for i in os.listdir(base_dir):
@@ -68,7 +70,7 @@ out_log("загрузка ПЭН")
 pen_dict = makeDict(PEN)
 
 # получение списка файлов кураторов
-files_kurators = filesKurators(BASE_DIR)
+files_kurators = listFiles(BASE_DIR)
 
 for fl in files_kurators:
 
@@ -97,9 +99,10 @@ for fl in files_kurators:
                 out_log("найден идентификатор {0} в ППР".format(key))
 
                 for index in PPR_INDEX:
-                    out_log("в поле {0} вставлено значение {1}".format(index, ppr_dict[key][index - 1]))
 
-                    row[index - 1].value = ppr_dict[key][index - 1]
+                    if row[index - 1].value != ppr_dict[key][index - 1]:
+                        out_log("в поле {0} замена {1} на {2}".format(index, row[index - 1].value, ppr_dict[key][index - 1]))
+                        row[index - 1].value = ppr_dict[key][index - 1]
             else:
                 out_log("идентификатор {0} не найден в ППР".format(key))
 
@@ -108,9 +111,10 @@ for fl in files_kurators:
                 out_log("найден идентификатор {0} в ПЭН".format(key))
 
                 for index in PEN_INDEX:
-                    out_log("в поле {0} вставлено значение {1}".format(index, pen_dict[key][index - 1]))
 
-                    row[index - 1].value = pen_dict[key][index - 1]
+                    if row[index - 1].value != pen_dict[key][index - 1]:
+                        out_log("в поле {0} замена {1} на {2}".format(index, row[index - 1].value, pen_dict[key][index - 1]))
+                        row[index - 1].value = pen_dict[key][index - 1]
             else:
                 out_log("идентификатор {0} не найден в ПЭН".format(key))
 
@@ -119,6 +123,47 @@ for fl in files_kurators:
     out_log("запись {0}".format(out_filename))
     wb.save(out_filename)
 
+filesInput = listFiles(BASE_OUT)
+theOneFile = BASE_OUT + 'out_all.xlsx'
+
+theOne = Workbook()
+del theOne['Sheet']
+o = theOne.create_sheet('ПЭН_ППР сокращ')
+safeTitle = o.title
+
+newSheet = theOne[safeTitle]
+row_index = 1
+keep3row = True
+
+for oneFile in filesInput:
+    print("load {0}".format(oneFile))
+    wb = load_workbook(oneFile)
+    sourceSheet = wb['ПЭН_ППР сокращ']
+
+    i = 4 if keep3row else 0
+
+    for row in sourceSheet.rows:
+        i += 1
+        
+        if i < 4:
+            continue
+
+        for cell in row:
+            newCell = newSheet.cell(row = row_index, column = cell.col_idx, value = cell.value)
+
+            if cell.has_style:
+                newCell.font = copy(cell.font)
+                newCell.border = copy(cell.border)
+                newCell.fill = copy(cell.fill)
+                newCell.number_format = copy(cell.number_format)
+                newCell.protection = copy(cell.protection)
+                newCell.alignment = copy(cell.alignment)
+
+        row_index += 1
+
+    keep3row = False
+
+theOne.save(theOneFile)
 # ппр 38-41 50-55 91-98 AL-AM-AN-AO AX-AY-AZ-BA-BB-DC CM-CN-CO-CP-CQ-CR-CS-CT
 # пэн 35-37 42-49 74-90
 
