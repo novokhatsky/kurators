@@ -63,28 +63,39 @@ def listFiles(base_dir):
 def makeFileKurator(fio):
     fam, nam, sec = fio.split(' ')
 
-    return BASE_DIR + fam + '.xlsx'
+    return BASE_OUT + fam + '.xlsx'
+
     
+def makeDictKurator(filename):
+    wb = load_workbook(filename, read_only = True)
+    sh = wb.active
+    data = {} 
+
+    # нужно пропустить три строки
+    enable_add = False
+    for row in sh.iter_rows():
+
+        if row[0].value == 'Идентификатор':
+            # после строки Идентификатор можно формировать словарь
+            enable_add = True
+            continue
+    
+        if enable_add:
+            kurator = row[17].value
+
+            if kurator not in data:
+                data[kurator] = []
+
+            data[kurator].append([cell.value for cell in row])
+
+    return data
+
 
 print('load ppr')
 out_log("загрузка ППР")
 
-ppr_dict = makeDict(PPR)
+# получили массив из ППР, где ключом является куратор
+ppr_dict = makeDictKurator(PPR)
 
-kurators = {}
-
-for id in ppr_dict.keys():
-    # найдем всех кураторов упомянутых в столбце 16 поле
-    kurator = ppr_dict[id][17]
-
-    if kurator in kurators:
-        continue
-
-    kurators[kurator] = '1'
-
-for kurator in kurators.keys():
-    print(makeFileKurator(kurator))
-    if not os.path.exists(makeFileKurator(kurator)):
-        print('file not found')
-
-
+for key in ppr_dict.keys():
+    print(key)
