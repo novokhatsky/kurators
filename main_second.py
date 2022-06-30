@@ -69,7 +69,7 @@ kurators = {}
 
 for id in ppr_dict.keys():
     # найдем всех кураторов упомянутых в столбце 16 поле
-    kurator = ppr_dict[id][15]
+    kurator = ppr_dict[id][17]
 
     if kurator in kurators:
         continue
