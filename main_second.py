@@ -60,6 +60,12 @@ def listFiles(base_dir):
     return spisok_file
 
 
+def makeFileKurator(fio):
+    fam, nam, sec = fio.split(' ')
+
+    return BASE_DIR + fam + '.xlsx'
+    
+
 print('load ppr')
 out_log("загрузка ППР")
 
@@ -77,6 +83,8 @@ for id in ppr_dict.keys():
     kurators[kurator] = '1'
 
 for kurator in kurators.keys():
-    print(kurator)
+    print(makeFileKurator(kurator))
+    if not os.path.exists(makeFileKurator(kurator)):
+        print('file not found')
 
 
