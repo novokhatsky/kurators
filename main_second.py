@@ -13,8 +13,13 @@ BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
 PPR = BASE_DIR + "пэн-ппр\\ППР.xlsx"
 PEN = BASE_DIR + "пэн-ппр\\ПЭН.xlsx"
 
-PPR_INDEX = [38, 39, 40, 41, 50, 51, 52, 53, 54, 55, 91, 92, 93, 94, 95, 96, 97, 98]
-PEN_INDEX = [35, 36, 37, 42, 43, 44, 45, 46, 47, 48, 49, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90]
+PPR_INDEX = [
+    38, 39, 40, 41
+]
+
+PEN_INDEX = [
+    38, 39, 40, 41
+]
 
 LOG_FILE = BASE_DIR + "process.log"
 
@@ -84,9 +89,9 @@ def makeDictKurator(filename):
             kurator = row[17].value
 
             if kurator not in data:
-                data[kurator] = []
+                data[kurator] = {}
 
-            data[kurator].append([cell.value for cell in row])
+            data[kurator][row[0].value] = [cell.value for cell in row]
 
     return data
 
@@ -98,4 +103,27 @@ out_log("загрузка ППР")
 ppr_dict = makeDictKurator(PPR)
 
 for key in ppr_dict.keys():
-    print(key)
+    # загружаем словарь
+    dict_kurator = ppr_dict[key]
+
+    # загружаем файл
+
+    wb = load_workbook(makeFileKurator(key))
+    sh = wb.active
+
+    # нужно пропустить три строки
+    enable_view = False
+    for row in sh.iter_rows():
+
+        if row[0].value == 'Идентификатор':
+            enable_view = True
+            continue
+
+        if enable_view:
+            id = row[0].value
+
+            if id in dict_kurator.keys():
+
+                print('нашли!')
+
+
