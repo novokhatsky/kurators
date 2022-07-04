@@ -30,6 +30,7 @@ def makeOut(filename):
 
     return BASE_OUT + el[-1]
 
+
 def makeDict(filename):
     wb = load_workbook(filename, read_only = True)
     sh = wb.active
@@ -54,7 +55,7 @@ def listFiles(base_dir):
     spisok_file = []
     for i in os.listdir(base_dir):
         if os.path.isfile(os.path.join(base_dir, i)):
-           if i.endswith('.xlsx'):
+           if i.endswith('.xlsx') or i.endswith('.xlsm'):
                 spisok_file.append(os.path.join(base_dir, i))
 
     return spisok_file
@@ -62,7 +63,6 @@ def listFiles(base_dir):
 
 print('load ppr')
 out_log("загрузка ППР")
-
 ppr_dict = makeDict(PPR)
 
 print('load pen')
@@ -79,7 +79,11 @@ for fl in files_kurators:
     print('processing {0}'.format(fl))
     out_log("обработка {0}".format(fl))
 
-    wb = load_workbook(fl)
+    if fl.endswith('.xlsm'):
+        wb = load_workbook(fl, read_only = False, keep_vba = True)
+    else:
+        wb = load_workbook(fl)
+
     sh = wb.active
     data = {} 
 
