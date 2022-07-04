@@ -10,16 +10,18 @@ from copy import copy
 BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
 BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
 
+ALL = BASE_OUT + 'out_all.xlsx'
+
 PPR = BASE_DIR + "пэн-ппр\\ППР.xlsx"
 PEN = BASE_DIR + "пэн-ппр\\ПЭН.xlsx"
 
-PPR_INDEX = [
-    38, 39, 40, 41
-]
+PPR_OUT = BASE_OUT + "пэн-ппр\\ППР.xlsx"
+PEN_OUT = BASE_OUT + "пэн-ппр\\ПЭН.xlsx"
 
-PEN_INDEX = [
-    38, 39, 40, 41
-]
+PPR_INDEX = [20, 21, 74, 75, 76, 77, 78, 79, 80, 81, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98]
+
+PEN_INDEX = [20, 21, 74, 75, 76, 77, 78, 79, 80, 81, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98]
+
 
 LOG_FILE = BASE_DIR + "process.log"
 
@@ -71,59 +73,60 @@ def makeFileKurator(fio):
     return BASE_OUT + fam + '.xlsx'
 
     
-def makeDictKurator(filename):
-    wb = load_workbook(filename, read_only = True)
-    sh = wb.active
-    data = {} 
+print('load all')
+out_log("загрузка all")
 
-    # нужно пропустить три строки
-    enable_add = False
-    for row in sh.iter_rows():
-
-        if row[0].value == 'Идентификатор':
-            # после строки Идентификатор можно формировать словарь
-            enable_add = True
-            continue
-    
-        if enable_add:
-            kurator = row[17].value
-
-            if kurator not in data:
-                data[kurator] = {}
-
-            data[kurator][row[0].value] = [cell.value for cell in row]
-
-    return data
-
+all_dict = makeDict(ALL)
 
 print('load ppr')
-out_log("загрузка ППР")
+wb = load_workbook(PPR)
+sh = wb.active
 
-# получили массив из ППР, где ключом является куратор
-ppr_dict = makeDictKurator(PPR)
+print('seek ppr')
+# нужно пропустить три строки
+enable_view = False
+for row in sh.iter_rows():
 
-for key in ppr_dict.keys():
-    # загружаем словарь
-    dict_kurator = ppr_dict[key]
+    if row[0].value == 'Идентификатор':
+        enable_view = True
+        continue
 
-    # загружаем файл
+    if enable_view:
+        key = row[0].value
 
-    wb = load_workbook(makeFileKurator(key))
-    sh = wb.active
+        if key in all_dict:
+            try:
+                for index in PPR_INDEX:
+                    row[index - 1].value = all_dict[key][index - 1]
+            except IndexError:
+                continue
 
-    # нужно пропустить три строки
-    enable_view = False
-    for row in sh.iter_rows():
+print('save ppr')
+wb.save(PPR_OUT)
+    
+print('load pen')
+wb = load_workbook(PEN)
+sh = wb.active
 
-        if row[0].value == 'Идентификатор':
-            enable_view = True
-            continue
+print('seek pen')
+# нужно пропустить три строки
+enable_view = False
+for row in sh.iter_rows():
 
-        if enable_view:
-            id = row[0].value
+    if row[0].value == 'Идентификатор':
+        enable_view = True
+        continue
 
-            if id in dict_kurator.keys():
+    if enable_view:
+        key = row[0].value
 
-                print('нашли!')
+        if key in all_dict:
+            try:
+                for index in PEN_INDEX:
+                    row[index - 1].value = all_dict[key][index - 1]
+            except IndexError:
+                continue
 
-
+print('save pen')
+wb.save(PEN_OUT)
+    
