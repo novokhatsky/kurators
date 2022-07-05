@@ -20,9 +20,11 @@ PEN = BASE_DIR + "пэн-ппр\\ПЭН.xlsx"
 PPR_OUT = BASE_OUT + "пэн-ппр\\ППР.xlsx"
 PEN_OUT = BASE_OUT + "пэн-ппр\\ПЭН.xlsx"
 
+# поля которые переносятся из ПЭН и ППР в файлы кураторов
 PPR_INDEX_I = [38, 39, 40, 41, 50, 51, 52, 53, 54, 55, 91, 92, 93, 94, 95, 96, 97, 98]
 PEN_INDEX_I = [35, 36, 37, 42, 43, 44, 45, 46, 47, 48, 49, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90]
 
+# поля которые переносятся из кураторов в ПЭН и ППР
 PPR_INDEX_II = [20, 21, 74, 75, 76, 77, 78, 79, 80, 81, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98]
 PEN_INDEX_II = [20, 21, 74, 75, 76, 77, 78, 79, 80, 81, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98]
 
@@ -223,17 +225,24 @@ print('seek pen')
 
 for row in sh.iter_rows():
     key = row[0].value
+    new_row = [] 
 
     for dic in dicts:
 
         if key in dic.keys():
-            
+
+            new_row = [cell.value for cell in row]
+
             for index in PEN_INDEX_II:
-                row[index - 1].value = dic[key][index - 1]
+                new_row[index - 1] = dic[key][index - 1]
 
-        dic.clear()
+            break
 
-    newSheet.append([cell.value for cell in row])
+    if new_row == []:
+        newSheet.append([cell.value for cell in row])
+    else:
+        newSheet.append([cell for cell in new_row])
+
 
 print('clear')
 dicts = None
