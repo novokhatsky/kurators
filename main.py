@@ -4,13 +4,15 @@ from openpyxl import load_workbook, Workbook
 import os
 import logging
 from copy import copy
-
+from datetime import date
+import shutil
 import traceback
 
 #BASE_DIR = "d:\\work\\in\\"
 #BASE_OUT = "d:\\work\\out\\"
 BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
 BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
+BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
 
 ALL = BASE_OUT + 'out_all.xlsx'
 
@@ -243,4 +245,27 @@ wb = None
 print('save pen')
 theOne.save(PEN_OUT)
 theOne.close()
+
+# создание резервной копии с датой
+fullFileBackup = BACKUP_PATH + date.today().isoformat()
+
+if os.path.isdir(fullFileBackup):
+    print("exists")
+    exit()
+
+# создаем каталог и переносим все вайлы из in
+shutil.copytree(BASE_DIR, fullFileBackup)
+
+# удаляем каталог ИН
+shutil.rmtree(BASE_DIR)
+
+# создаем каталог ИН и копируем туда данные из АУТ
+shutil.copytree(BASE_OUT, BASE_DIR)
+
+# удаляем каталог АУТ 
+shutil.rmtree(BASE_OUT)
+
+# создаем АУТ и пэн-ппр
+os.mkdir(BASE_OUT)
+os.mkdir(BASE_OUT + "пэн-ппр")
 
