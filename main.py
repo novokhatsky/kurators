@@ -120,8 +120,6 @@ files_kurators = listFiles(BASE_DIR)
 
 for fl in files_kurators:
 
-    #fl = files_kurators[1]
-
     print('processing {0}'.format(fl))
     out_log("обработка {0}".format(fl))
 
@@ -175,17 +173,9 @@ for fl in files_kurators:
     wb.save(out_filename)
     wb.close()
     wb = None
-    pen_dict.clear()
-    ppr_dict.clear()
 
-# запись общего файла
-#saveAll()
-
-#второй этап
-#print('load all')
-#out_log("загрузка all")
-
-#all_dict = makeDict(ALL)
+pen_dict.clear()
+ppr_dict.clear()
 
 print('load kurators')
 dicts = []
