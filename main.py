@@ -78,38 +78,6 @@ def listFiles(base_dir):
     return spisok_file
 
 
-def saveAll():
-    filesInput = listFiles(BASE_OUT)
-
-    theOne = Workbook(write_only = True)
-    o = theOne.create_sheet('ПЭН_ППР сокращ')
-    newSheet = theOne[o.title]
-
-    # для первого файла считаем все строки
-    enable_add = True
-    for oneFile in filesInput:
-        print("load {0}".format(oneFile))
-        wb = load_workbook(oneFile, read_only = True)
-        sourceSheet = wb.active
-
-        for row in sourceSheet.iter_rows():
-        
-            if enable_add:
-                newSheet.append([cell.value for cell in row])
-                continue
-
-            if row[0].value == 'Идентификатор':
-                enable_add = True
-
-        # у второго и последующих файлов, пропускаем строки включительно до Иденификатора
-        enable_add = False
-        wb.close()
-
-    print('save all')
-    theOne.save(ALL)
-    theOne.close()
-
-
 def currDateTime():
     return 'Обновлено: ' + datetime.today().strftime('%d-%m-%Y %H:%M')
 
