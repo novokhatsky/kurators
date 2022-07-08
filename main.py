@@ -5,6 +5,7 @@ import os
 import logging
 from copy import copy
 from datetime import date
+from datetime import datetime
 import shutil
 import traceback
 
@@ -109,6 +110,9 @@ def saveAll():
     theOne.close()
 
 
+def currDateTime():
+    return 'Обновлено: ' + datetime.today().strftime('%d-%m-%Y %H:%M')
+
 print('load ppr')
 out_log("загрузка ППР")
 ppr_dict = makeDict(PPR)
@@ -172,6 +176,9 @@ for fl in files_kurators:
     out_filename = makeOut(fl)
     print("save {0}".format(out_filename))
     out_log("запись {0}".format(out_filename))
+
+    sh['A1'] = currDateTime()
+
     wb.save(out_filename)
     wb.close()
     wb = None
