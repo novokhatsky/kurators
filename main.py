@@ -2,7 +2,6 @@
 
 from openpyxl import load_workbook, Workbook
 import os
-import logging
 from copy import copy
 from datetime import date
 from datetime import datetime
@@ -14,8 +13,6 @@ import traceback
 BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
 BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
 BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
-
-ALL = BASE_OUT + 'out_all.xlsx'
 
 PPR = BASE_DIR + "пэн-ппр\\ППР.xlsx"
 PEN = BASE_DIR + "пэн-ппр\\ПЭН.xlsx"
@@ -30,14 +27,6 @@ PEN_INDEX_I = [21, 22, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 4
 # поля которые переносятся из кураторов в ПЭН и ППР
 PPR_INDEX_II = [19, 20, 50, 51, 52, 53, 54, 55, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98]
 PEN_INDEX_II = [19, 20, 50, 51, 52, 53, 54, 55, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98]
-
-LOG_FILE = BASE_DIR + "process.log"
-
-logging.basicConfig(format = u'[%(asctime)s] %(message)s', level = logging.INFO, filename = LOG_FILE)
-
-
-def out_log(mess):
-    logging.info(mess)
 
 
 def makeOut(filename):
@@ -82,11 +71,9 @@ def currDateTime():
     return 'Обновлено: ' + datetime.today().strftime('%d-%m-%Y %H:%M')
 
 print('load ppr')
-out_log("загрузка ППР")
 ppr_dict = makeDict(PPR)
 
 print('load pen')
-out_log("загрузка ПЭН")
 pen_dict = makeDict(PEN)
 
 # получение списка файлов кураторов
@@ -95,7 +82,6 @@ files_kurators = listFiles(BASE_DIR)
 for fl in files_kurators:
 
     print('processing {0}'.format(fl))
-    out_log("обработка {0}".format(fl))
 
     if fl.endswith('.xlsm'):
         wb = load_workbook(fl, read_only = False, keep_vba = True)
@@ -114,27 +100,25 @@ for fl in files_kurators:
 
             if key in ppr_dict:
                 # есть идентификатор в ппр
-                out_log("найден идентификатор {0} в ППР".format(key))
 
                 for index in PPR_INDEX_I:
 
                     if row[index - 1].value != ppr_dict[key][index - 1]:
-                        out_log("в поле {0} замена {1} на {2}".format(index, row[index - 1].value, ppr_dict[key][index - 1]))
                         row[index - 1].value = ppr_dict[key][index - 1]
             else:
-                out_log("идентификатор {0} не найден в ППР".format(key))
+                pass
+                #out_log("идентификатор {0} не найден в ППР".format(key))
 
             if key in pen_dict:
                 # есть идентификатор в ппр
-                out_log("найден идентификатор {0} в ПЭН".format(key))
 
                 for index in PEN_INDEX_I:
 
                     if row[index - 1].value != pen_dict[key][index - 1]:
-                        out_log("в поле {0} замена {1} на {2}".format(index, row[index - 1].value, pen_dict[key][index - 1]))
                         row[index - 1].value = pen_dict[key][index - 1]
             else:
-                out_log("идентификатор {0} не найден в ПЭН".format(key))
+                pass
+                #out_log("идентификатор {0} не найден в ПЭН".format(key))
 
             continue
 
@@ -143,7 +127,6 @@ for fl in files_kurators:
 
     out_filename = makeOut(fl)
     print("save {0}".format(out_filename))
-    out_log("запись {0}".format(out_filename))
 
     sh['A1'] = currDateTime()
 
