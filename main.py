@@ -79,6 +79,10 @@ pen_dict = makeDict(PEN)
 # получение списка файлов кураторов
 files_kurators = listFiles(BASE_DIR)
 
+# создаем книгу для записи ненайденных ИД
+wbNotFoundId = Workbook(write_only = True)
+sheetId = wbNotFoundId[wbNotFoundId.create_sheet('not found id').title]
+
 for fl in files_kurators:
 
     print('processing {0}'.format(fl))
@@ -106,8 +110,7 @@ for fl in files_kurators:
                     if row[index - 1].value != ppr_dict[key][index - 1]:
                         row[index - 1].value = ppr_dict[key][index - 1]
             else:
-                pass
-                #out_log("идентификатор {0} не найден в ППР".format(key))
+                sheetId.append([key, 'ППР', fl.replace(BASE_DIR, '')])
 
             if key in pen_dict:
                 # есть идентификатор в ппр
@@ -117,8 +120,7 @@ for fl in files_kurators:
                     if row[index - 1].value != pen_dict[key][index - 1]:
                         row[index - 1].value = pen_dict[key][index - 1]
             else:
-                pass
-                #out_log("идентификатор {0} не найден в ПЭН".format(key))
+                sheetId.append([key, 'ПЭН', fl.replace(BASE_DIR, '')])
 
             continue
 
@@ -128,7 +130,7 @@ for fl in files_kurators:
     out_filename = makeOut(fl)
     print("save {0}".format(out_filename))
 
-    sh['A1'] = currDateTime()
+    sh['Y1'] = currDateTime()
 
     wb.save(out_filename)
     wb.close()
@@ -136,6 +138,8 @@ for fl in files_kurators:
 
 pen_dict.clear()
 ppr_dict.clear()
+wbNotFoundId.save(BASE_OUT + 'not_ppr_pen.xlsx')
+wbNotFoundId.close()
 
 print('load kurators')
 dicts = []
