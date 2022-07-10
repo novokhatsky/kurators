@@ -78,9 +78,9 @@ class fileExcel(object):
         self.sheet = None
 
 
-    def create(self):
+    def create(self, sheetname):
         self.workbook = Workbook(write_only = True)
-        self.sheet = self.workbook[self.workbook.create_sheet('not found id').title]
+        self.sheet = self.workbook[self.workbook.create_sheet(sheetname).title]
 
 
     def append(self, row):
@@ -90,7 +90,6 @@ class fileExcel(object):
     def save(self):
         self.workbook.save(self.filename)
         self.workbook.close()
-        self.workbook = None
 
 
 class kuratorsDict(object):
@@ -124,7 +123,7 @@ files_kurators = listFiles(BASE_DIR)
 
 # создаем книгу для записи ненайденных ИД
 notFoundId = fileExcel(BASE_OUT + 'no_id_kur_in_ppr_pen.xlsx')
-notFoundId.create()
+notFoundId.create('not found')
 
 for fl in files_kurators:
 
@@ -182,9 +181,11 @@ del notFoundId
 del pen_dict
 del ppr_dict
 
+
 print('load kurators')
 kurators_dict = kuratorsDict()
 kurators_dict.load()
+
 
 print('load ppr')
 wb = load_workbook(PPR)
@@ -192,7 +193,7 @@ sh = wb.active
 
 # создаем книгу для записи ненайденных ИД
 notFoundId = fileExcel(BASE_OUT + 'no_id_ppr_in_kur.xlsx')
-notFoundId.create()
+notFoundId.create('not found')
 
 print('seek ppr')
 
@@ -216,15 +217,17 @@ wb.save(PPR_OUT)
 del sh
 del wb
 
-# создаем книгу для записи ненайденных ИД
-
 print('load pen')
 wb = load_workbook(PEN, read_only = True)
 sh = wb.active
 
-theOne = Workbook(write_only = True)
-o = theOne.create_sheet('ПЭН_ППР сокращ')
-newSheet = theOne[o.title]
+# создаем книгу для записи ненайденных ИД
+notFoundId = fileExcel(BASE_OUT + 'no_id_pen_in_kur.xlsx')
+notFoundId.create('not found')
+
+# создаем книгу для создания нового файла ПЭН
+newPen = fileExcel(PEN_OUT)
+newPen.create('ПЭН_ППР сокращ')
 
 print('seek pen')
 
@@ -239,19 +242,21 @@ for row in sh.iter_rows():
         for index in PEN_INDEX_II:
             new_row[index - 1] = found[index - 1]
 
-        newSheet.append([cell for cell in new_row])
+        newPen.append(new_row)
 
     else:
-        newSheet.append([cell.value for cell in row])
+        newPen.append([cell.value for cell in row])
+        notFoundId.append([key])
 
 print('clear')
-del kurators_dict
+notFoundId.save()
+del notFoundId
 del sh
 del wb
 
 print('save pen')
-theOne.save(PEN_OUT)
-del theOne
+newPen.save()
+del newPen
 
 # создание резервной копии с датой
 fullFileBackup = BACKUP_PATH + date.today().isoformat()
