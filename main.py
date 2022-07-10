@@ -71,6 +71,30 @@ def currDateTime():
     return 'Обновлено: ' + datetime.today().strftime('%d-%m-%Y %H:%M')
 
 
+def makeBackup():
+    fullFileBackup = BACKUP_PATH + date.today().isoformat()
+
+    if os.path.isdir(fullFileBackup):
+        print("exists")
+        exit()
+
+    # создаем каталог и переносим все вайлы из in
+    shutil.copytree(BASE_DIR, fullFileBackup)
+
+    # удаляем каталог ИН
+    shutil.rmtree(BASE_DIR)
+
+    # создаем каталог ИН и копируем туда данные из АУТ
+    shutil.copytree(BASE_OUT, BASE_DIR)
+
+    # удаляем каталог АУТ 
+    shutil.rmtree(BASE_OUT)
+
+    # создаем АУТ и пэн-ппр
+    os.mkdir(BASE_OUT)
+    os.mkdir(BASE_OUT + "пэн-ппр")
+
+
 class fileExcel(object):
     def __init__(self, filename):
         self.filename = filename
@@ -111,79 +135,6 @@ class kuratorsDict(object):
 
         return False
 
-
-print('load ppr')
-ppr_dict = makeDict(PPR)
-
-print('load pen')
-pen_dict = makeDict(PEN)
-
-# получение списка файлов кураторов
-files_kurators = listFiles(BASE_DIR)
-
-# создаем книгу для записи ненайденных ИД
-notFoundId = fileExcel(BASE_OUT + 'no_id_kur_in_ppr_pen.xlsx')
-notFoundId.create('not found')
-
-for fl in files_kurators:
-
-    print('processing {0}'.format(fl))
-
-    if fl.endswith('.xlsm'):
-        wb = load_workbook(fl, read_only = False, keep_vba = True)
-    else:
-        wb = load_workbook(fl)
-
-    sh = wb.active
-    data = {} 
-
-    # нужно пропустить три строки
-    enable_work = False
-    for row in sh.iter_rows():
-
-        if enable_work:
-            key = row[0].value
-
-            if key in ppr_dict:
-                # есть идентификатор в ппр
-
-                for index in PPR_INDEX_I:
-
-                    if row[index - 1].value != ppr_dict[key][index - 1]:
-                        row[index - 1].value = ppr_dict[key][index - 1]
-            else:
-                notFoundId.append([key, 'ППР', fl.replace(BASE_DIR, '')])
-
-            if key in pen_dict:
-                # есть идентификатор в ппр
-
-                for index in PEN_INDEX_I:
-
-                    if row[index - 1].value != pen_dict[key][index - 1]:
-                        row[index - 1].value = pen_dict[key][index - 1]
-            else:
-                notFoundId.append([key, 'ПЭН', fl.replace(BASE_DIR, '')])
-
-            continue
-
-        if row[0].value == 'Идентификатор':
-            enable_work = True
-
-    out_filename = makeOut(fl)
-    print("save {0}".format(out_filename))
-
-    sh['Y1'] = currDateTime()
-
-    wb.save(out_filename)
-
-notFoundId.save()
-del notFoundId
-del pen_dict
-del ppr_dict
-
-print('load kurators')
-kurators_dict = kuratorsDict()
-kurators_dict.load()
 
 class kuratorsCheck(object):
     def __init__(self, fileIn, fileOut, notFound, dicts):
@@ -233,6 +184,78 @@ class kuratorsCheck(object):
         self.fileOut.save()
 
 
+print('load ppr')
+ppr_dict = makeDict(PPR)
+
+print('load pen')
+pen_dict = makeDict(PEN)
+
+# создаем книгу для записи ненайденных ИД
+notFoundId = fileExcel(BASE_OUT + 'no_id_kur_in_ppr_pen.xlsx')
+notFoundId.create('not found')
+
+# проходим по списку файлов кураторов
+for fl in listFiles(BASE_DIR):
+    print('processing {0}'.format(fl))
+
+    if fl.endswith('.xlsm'):
+        wb = load_workbook(fl, read_only = False, keep_vba = True)
+    else:
+        wb = load_workbook(fl)
+    sh = wb.active
+
+    # нужно пропустить три строки
+    enable_work = False
+    for row in sh.iter_rows():
+
+        if enable_work:
+            key = row[0].value
+
+            if key in ppr_dict:
+                # есть идентификатор в ппр
+                notFoundInPpr = False
+
+                for index in PPR_INDEX_I:
+
+                    if row[index - 1].value != ppr_dict[key][index - 1]:
+                        row[index - 1].value = ppr_dict[key][index - 1]
+            else:
+                notFoundInPpr = True
+
+            if key in pen_dict:
+                # есть идентификатор в ппр
+                notFoundInPen = False
+
+                for index in PEN_INDEX_I:
+
+                    if row[index - 1].value != pen_dict[key][index - 1]:
+                        row[index - 1].value = pen_dict[key][index - 1]
+            else:
+                notFoundInPen = True
+
+            if notFoundInPen and notFoundInPpr:
+                notFoundId.append([key, fl.replace(BASE_DIR, '')])
+
+            continue
+
+        if row[0].value == 'Идентификатор':
+            enable_work = True
+
+    out_filename = makeOut(fl)
+
+    sh['Y1'] = currDateTime()
+    print("save {0}".format(out_filename))
+    wb.save(out_filename)
+
+notFoundId.save()
+del notFoundId
+del pen_dict
+del ppr_dict
+
+print('load kurators')
+kurators_dict = kuratorsDict()
+kurators_dict.load()
+
 ppr = kuratorsCheck(PPR, PPR_OUT, BASE_OUT + 'no_id_ppr_in_kur.xlsx', kurators_dict)
 ppr.seekChange(PPR_INDEX_II)
 ppr.save()
@@ -242,25 +265,5 @@ pen.seekChange(PEN_INDEX_II)
 pen.save()
 
 # создание резервной копии с датой
-fullFileBackup = BACKUP_PATH + date.today().isoformat()
-
-if os.path.isdir(fullFileBackup):
-    print("exists")
-    exit()
-
-# создаем каталог и переносим все вайлы из in
-shutil.copytree(BASE_DIR, fullFileBackup)
-
-# удаляем каталог ИН
-shutil.rmtree(BASE_DIR)
-
-# создаем каталог ИН и копируем туда данные из АУТ
-shutil.copytree(BASE_OUT, BASE_DIR)
-
-# удаляем каталог АУТ 
-shutil.rmtree(BASE_OUT)
-
-# создаем АУТ и пэн-ппр
-os.mkdir(BASE_OUT)
-os.mkdir(BASE_OUT + "пэн-ппр")
+makeBackup()
 
