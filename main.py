@@ -70,6 +70,49 @@ def listFiles(base_dir):
 def currDateTime():
     return 'Обновлено: ' + datetime.today().strftime('%d-%m-%Y %H:%M')
 
+
+class fileExcel(object):
+    def __init__(self, filename):
+        self.filename = filename
+        self.workbook = None
+        self.sheet = None
+
+
+    def create(self):
+        self.workbook = Workbook(write_only = True)
+        self.sheet = self.workbook[self.workbook.create_sheet('not found id').title]
+
+
+    def append(self, row):
+        self.sheet.append(row)
+
+
+    def save(self):
+        self.workbook.save(self.filename)
+        self.workbook.close()
+        self.workbook = None
+
+
+class kuratorsDict(object):
+    def __init__(self):
+        self.dicts = []
+
+
+    def load(self):
+        for fl in listFiles(BASE_OUT):
+            self.dicts.append(makeDict(fl))
+
+
+    def seekkey(self, key):
+        for dic in self.dicts:
+
+            if key in dic.keys():
+
+                return dic[key]
+
+        return False
+
+
 print('load ppr')
 ppr_dict = makeDict(PPR)
 
@@ -80,8 +123,8 @@ pen_dict = makeDict(PEN)
 files_kurators = listFiles(BASE_DIR)
 
 # создаем книгу для записи ненайденных ИД
-wbNotFoundId = Workbook(write_only = True)
-sheetId = wbNotFoundId[wbNotFoundId.create_sheet('not found id').title]
+notFoundId = fileExcel(BASE_OUT + 'no_id_kur_in_ppr_pen.xlsx')
+notFoundId.create()
 
 for fl in files_kurators:
 
@@ -110,7 +153,7 @@ for fl in files_kurators:
                     if row[index - 1].value != ppr_dict[key][index - 1]:
                         row[index - 1].value = ppr_dict[key][index - 1]
             else:
-                sheetId.append([key, 'ППР', fl.replace(BASE_DIR, '')])
+                notFoundId.append([key, 'ППР', fl.replace(BASE_DIR, '')])
 
             if key in pen_dict:
                 # есть идентификатор в ппр
@@ -120,7 +163,7 @@ for fl in files_kurators:
                     if row[index - 1].value != pen_dict[key][index - 1]:
                         row[index - 1].value = pen_dict[key][index - 1]
             else:
-                sheetId.append([key, 'ПЭН', fl.replace(BASE_DIR, '')])
+                notFoundId.append([key, 'ПЭН', fl.replace(BASE_DIR, '')])
 
             continue
 
@@ -133,39 +176,47 @@ for fl in files_kurators:
     sh['Y1'] = currDateTime()
 
     wb.save(out_filename)
-    wb.close()
-    wb = None
 
-pen_dict.clear()
-ppr_dict.clear()
-wbNotFoundId.save(BASE_OUT + 'not_ppr_pen.xlsx')
-wbNotFoundId.close()
+notFoundId.save()
+del notFoundId
+del pen_dict
+del ppr_dict
 
 print('load kurators')
-dicts = []
-for fl in listFiles(BASE_OUT):
-    dicts.append(makeDict(fl))
+kurators_dict = kuratorsDict()
+kurators_dict.load()
 
 print('load ppr')
 wb = load_workbook(PPR)
 sh = wb.active
 
+# создаем книгу для записи ненайденных ИД
+notFoundId = fileExcel(BASE_OUT + 'no_id_ppr_in_kur.xlsx')
+notFoundId.create()
+
 print('seek ppr')
 
 for row in sh.iter_rows():
     key = row[0].value
+    
+    found = kurators_dict.seekkey(key)
 
-    for dic in dicts:
+    if found:
+        for index in PPR_INDEX_II:
+            row[index - 1].value = found[index - 1]
 
-        if key in dic.keys():
-            
-            for index in PPR_INDEX_II:
-                row[index - 1].value = dic[key][index - 1]
+    else:
+        notFoundId.append([key])
+
+notFoundId.save()
+del notFoundId
 
 print('save ppr')
 wb.save(PPR_OUT)
-wb.close()
-wb = None
+del sh
+del wb
+
+# создаем книгу для записи ненайденных ИД
 
 print('load pen')
 wb = load_workbook(PEN, read_only = True)
@@ -179,34 +230,28 @@ print('seek pen')
 
 for row in sh.iter_rows():
     key = row[0].value
-    new_row = [] 
 
-    for dic in dicts:
+    found = kurators_dict.seekkey(key)
 
-        if key in dic.keys():
+    if found:
+        new_row = [cell.value for cell in row]
 
-            new_row = [cell.value for cell in row]
+        for index in PEN_INDEX_II:
+            new_row[index - 1] = found[index - 1]
 
-            for index in PEN_INDEX_II:
-                new_row[index - 1] = dic[key][index - 1]
-
-            break
-
-    if new_row == []:
-        newSheet.append([cell.value for cell in row])
-    else:
         newSheet.append([cell for cell in new_row])
 
+    else:
+        newSheet.append([cell.value for cell in row])
 
 print('clear')
-dicts = None
-
-wb.close()
-wb = None
+del kurators_dict
+del sh
+del wb
 
 print('save pen')
 theOne.save(PEN_OUT)
-theOne.close()
+del theOne
 
 # создание резервной копии с датой
 fullFileBackup = BACKUP_PATH + date.today().isoformat()
