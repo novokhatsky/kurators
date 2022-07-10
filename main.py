@@ -191,7 +191,7 @@ class kuratorsCheck(object):
         self.wb = load_workbook(fileIn, read_only = True)
         self.sh = self.wb.active
 
-        # создаем книгу для создания нового файла ПЭН
+        # создаем книгу для создания нового файла ПЭН или ППР
         self.fileOut = fileExcel(fileOut)
         self.fileOut.create('ПЭН_ППР сокращ')
 
@@ -199,7 +199,7 @@ class kuratorsCheck(object):
         self.notFoundId = fileExcel(notFound)
         self.notFoundId.create('not found')
 
-        # создание словаря кираторов
+        # создание словаря кураторов
         self.dicts = dicts
 
 
