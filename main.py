@@ -181,82 +181,65 @@ del notFoundId
 del pen_dict
 del ppr_dict
 
-
 print('load kurators')
 kurators_dict = kuratorsDict()
 kurators_dict.load()
 
+class kuratorsCheck(object):
+    def __init__(self, fileIn, fileOut, notFound, dicts):
+        print('load ' + fileIn)
+        self.wb = load_workbook(fileIn, read_only = True)
+        self.sh = self.wb.active
 
-print('load ppr')
-wb = load_workbook(PPR)
-sh = wb.active
+        # создаем книгу для создания нового файла ПЭН
+        self.fileOut = fileExcel(fileOut)
+        self.fileOut.create('ПЭН_ППР сокращ')
 
-# создаем книгу для записи ненайденных ИД
-notFoundId = fileExcel(BASE_OUT + 'no_id_ppr_in_kur.xlsx')
-notFoundId.create('not found')
+        # создаем книгу для записи ненайденных ИД
+        self.notFoundId = fileExcel(notFound)
+        self.notFoundId.create('not found')
 
-print('seek ppr')
+        # создание словаря кираторов
+        self.dicts = dicts
 
-for row in sh.iter_rows():
-    key = row[0].value
-    
-    found = kurators_dict.seekkey(key)
 
-    if found:
-        for index in PPR_INDEX_II:
-            row[index - 1].value = found[index - 1]
+    def seekChange(self, indexCells):
+        print('seek')
 
-    else:
-        notFoundId.append([key])
+        for row in self.sh.iter_rows():
+            key = row[0].value
 
-notFoundId.save()
-del notFoundId
+            found = self.dicts.seekkey(key)
 
-print('save ppr')
-wb.save(PPR_OUT)
-del sh
-del wb
+            if found:
+                new_row = [cell.value for cell in row]
 
-print('load pen')
-wb = load_workbook(PEN, read_only = True)
-sh = wb.active
+                for index in indexCells:
+                    new_row[index - 1] = found[index - 1]
 
-# создаем книгу для записи ненайденных ИД
-notFoundId = fileExcel(BASE_OUT + 'no_id_pen_in_kur.xlsx')
-notFoundId.create('not found')
+                self.fileOut.append(new_row)
 
-# создаем книгу для создания нового файла ПЭН
-newPen = fileExcel(PEN_OUT)
-newPen.create('ПЭН_ППР сокращ')
+            else:
+                self.fileOut.append([cell.value for cell in row])
+                self.notFoundId.append([key])
 
-print('seek pen')
 
-for row in sh.iter_rows():
-    key = row[0].value
+    def save(self):
+        print('save')
+        self.sh = None
+        self.wb = None
 
-    found = kurators_dict.seekkey(key)
+        self.notFoundId.save()
+        self.fileOut.save()
 
-    if found:
-        new_row = [cell.value for cell in row]
 
-        for index in PEN_INDEX_II:
-            new_row[index - 1] = found[index - 1]
+ppr = kuratorsCheck(PPR, PPR_OUT, BASE_OUT + 'no_id_ppr_in_kur.xlsx', kurators_dict)
+ppr.seekChange(PPR_INDEX_II)
+ppr.save()
 
-        newPen.append(new_row)
-
-    else:
-        newPen.append([cell.value for cell in row])
-        notFoundId.append([key])
-
-print('clear')
-notFoundId.save()
-del notFoundId
-del sh
-del wb
-
-print('save pen')
-newPen.save()
-del newPen
+pen = kuratorsCheck(PEN, PEN_OUT, BASE_OUT + 'no_id_pen_in_kur.xlsx', kurators_dict)
+pen.seekChange(PEN_INDEX_II)
+pen.save()
 
 # создание резервной копии с датой
 fullFileBackup = BACKUP_PATH + date.today().isoformat()
