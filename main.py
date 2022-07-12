@@ -10,9 +10,12 @@ import traceback
 
 #BASE_DIR = "d:\\work\\in\\"
 #BASE_OUT = "d:\\work\\out\\"
+#BACKUP_PATH = "d:\\work\\backup\\"
 BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
 BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
 BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
+
+DIFF_PATH = BASE_OUT + "diff\\"
 
 PPR = BASE_DIR + "пэн-ппр\\ППР.xlsx"
 PEN = BASE_DIR + "пэн-ппр\\ПЭН.xlsx"
@@ -48,7 +51,7 @@ def makeDict(filename):
             data[row[0].value] = [cell.value for cell in row]
             continue
 
-        if row[0].value == 'Идентификатор':
+        if len(row) > 0 and row[0].value == 'Идентификатор':
             enable_add = True
 
     wb.close()
@@ -123,6 +126,7 @@ class kuratorsDict(object):
 
     def load(self):
         for fl in listFiles(BASE_OUT):
+            print('load {0}'.format(fl))
             self.dicts.append(makeDict(fl))
 
 
@@ -157,7 +161,12 @@ class kuratorsCheck(object):
     def seekChange(self, indexCells):
         print('seek')
 
+        i = 0
         for row in self.sh.iter_rows():
+            # если в cтроке нет элементов, пропускаем
+            if len(row) < 1:
+                continue
+
             key = row[0].value
 
             found = self.dicts.seekkey(key)
@@ -174,6 +183,11 @@ class kuratorsCheck(object):
                 self.fileOut.append([cell.value for cell in row])
                 self.notFoundId.append([key])
 
+            i += 1
+            if i % 500 == 0:
+                print('left {0}'.format(i))
+
+        print('end of {0}'.format(i))
 
     def save(self):
         print('save')
@@ -252,15 +266,18 @@ del notFoundId
 del pen_dict
 del ppr_dict
 
-print('load kurators')
+print('load kurators:')
 kurators_dict = kuratorsDict()
 kurators_dict.load()
 
-ppr = kuratorsCheck(PPR, PPR_OUT, BASE_OUT + 'no_id_ppr_in_kur.xlsx', kurators_dict)
+if not os.path.isdir(DIFF_PATH):
+    os.mkdir(DIFF_PATH)
+
+ppr = kuratorsCheck(PPR, PPR_OUT, DIFF_PATH + 'no_id_ppr_in_kur.xlsx', kurators_dict)
 ppr.seekChange(PPR_INDEX_II)
 ppr.save()
 
-pen = kuratorsCheck(PEN, PEN_OUT, BASE_OUT + 'no_id_pen_in_kur.xlsx', kurators_dict)
+pen = kuratorsCheck(PEN, PEN_OUT, DIFF_PATH + 'no_id_pen_in_kur.xlsx', kurators_dict)
 pen.seekChange(PEN_INDEX_II)
 pen.save()
 
