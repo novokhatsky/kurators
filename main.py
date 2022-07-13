@@ -205,7 +205,7 @@ print('load pen')
 pen_dict = makeDict(PEN)
 
 # создаем книгу для записи ненайденных ИД
-notFoundId = fileExcel(BASE_OUT + 'no_id_kur_in_ppr_pen.xlsx')
+notFoundId = fileExcel(DIFF_PATH + 'no_id_kur_in_ppr_pen.xlsx')
 notFoundId.create('not found')
 
 # проходим по списку файлов кураторов
