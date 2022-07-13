@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from openpyxl import load_workbook, Workbook
+from openpyxl.cell import WriteOnlyCell
 import os
 from copy import copy
 from datetime import date
@@ -160,32 +161,61 @@ class kuratorsCheck(object):
 
     def seekChange(self, indexCells):
         print('seek')
-
         i = 0
+        enable_seek = False
+
         for row in self.sh.iter_rows():
             # если в cтроке нет элементов, пропускаем
             if len(row) < 1:
                 continue
 
-            key = row[0].value
-
-            found = self.dicts.seekkey(key)
-
-            if found:
-                new_row = [cell.value for cell in row]
-
-                for index in indexCells:
-                    new_row[index - 1] = found[index - 1]
-
-                self.fileOut.append(new_row)
-
-            else:
-                self.fileOut.append([cell.value for cell in row])
-                self.notFoundId.append([key])
-
             i += 1
             if i % 500 == 0:
                 print('left {0}'.format(i))
+
+            key = row[0].value
+
+            if enable_seek:
+
+                found = self.dicts.seekkey(key)
+
+                if found:
+                    new_row = [cell.value for cell in row]
+
+                    for index in indexCells:
+                        new_row[index - 1] = found[index - 1]
+
+                    self.fileOut.append(new_row)
+
+                else:
+                    self.fileOut.append([cell.value for cell in row])
+                    self.notFoundId.append([key])
+
+                continue                
+
+            if key == 'Идентификатор':
+                enable_seek = True
+
+            # копируем шапку со стилями
+            new_row = []
+            for cell in row:
+                new_cell = WriteOnlyCell(self.fileOut.sheet, cell.value)
+
+                if cell.fill:
+                    new_cell.fill = copy(cell.fill)
+
+                if cell.font:
+                    new_cell.font = copy(cell.font)
+
+                if cell.border:
+                    new_cell.border = copy(cell.border)
+
+                if cell.alignment:
+                    new_cell.alignment = copy(cell.alignment)
+
+                new_row.append(new_cell)
+
+            self.fileOut.append([cell for cell in new_row])
 
         print('end of {0}'.format(i))
 
