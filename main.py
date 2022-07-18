@@ -229,10 +229,18 @@ class kuratorsCheck(object):
 
 
 print('load ppr')
-ppr_dict = makeDict(PPR)
+
+if os.path.isfile(PPR):
+    ppr_dict = makeDict(PPR)
+else:
+    ppr_dict = {}
 
 print('load pen')
-pen_dict = makeDict(PEN)
+
+if os.path.isfile(PEN):
+    pen_dict = makeDict(PEN)
+else:
+    pen_dict = {}
 
 # создаем книгу для записи ненайденных ИД
 notFoundId = fileExcel(DIFF_PATH + 'no_id_kur_in_ppr_pen.xlsx')
