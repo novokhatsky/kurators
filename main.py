@@ -221,8 +221,8 @@ class kuratorsCheck(object):
 
     def save(self):
         print('save')
-        self.sh = None
-        self.wb = None
+        del self.sh
+        self.wb.close()
 
         self.notFoundId.save()
         self.fileOut.save()
@@ -311,13 +311,15 @@ kurators_dict.load()
 if not os.path.isdir(DIFF_PATH):
     os.mkdir(DIFF_PATH)
 
-ppr = kuratorsCheck(PPR, PPR_OUT, DIFF_PATH + 'no_id_ppr_in_kur.xlsx', kurators_dict)
-ppr.seekChange(PPR_INDEX_II)
-ppr.save()
+if os.path.isfile(PPR):
+    ppr = kuratorsCheck(PPR, PPR_OUT, DIFF_PATH + 'no_id_ppr_in_kur.xlsx', kurators_dict)
+    ppr.seekChange(PPR_INDEX_II)
+    ppr.save()
 
-pen = kuratorsCheck(PEN, PEN_OUT, DIFF_PATH + 'no_id_pen_in_kur.xlsx', kurators_dict)
-pen.seekChange(PEN_INDEX_II)
-pen.save()
+if os.path.isfile(PEN):
+    pen = kuratorsCheck(PEN, PEN_OUT, DIFF_PATH + 'no_id_pen_in_kur.xlsx', kurators_dict)
+    pen.seekChange(PEN_INDEX_II)
+    pen.save()
 
 # создание резервной копии с датой
 makeBackup()
