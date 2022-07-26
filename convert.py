@@ -12,7 +12,7 @@ def getValue(val):
     return '{0}'.format(val)
 
 
-FILENAME = 'd:\\tmp\\rubcov\\2.xlsx'
+FILENAME = 'd:\\tmp\\rubcov\\файл2.xlsx'
 OUTFILE =  'd:\\tmp\\rubcov\\2.csv'
 DELIMENTER = '~'
 NAMESHEET = 'TDSheet'

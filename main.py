@@ -43,7 +43,6 @@ def makeDict(filename):
     wb = load_workbook(filename, read_only = True)
     sh = wb.active
     data = {} 
-
     # нужно пропустить три строки
     enable_add = False
     for row in sh.iter_rows():
@@ -230,6 +229,7 @@ class kuratorsCheck(object):
 
 print('load ppr')
 
+# если файла ППР нет, используем пустой справочник, иначе загружаем справочник из файла
 if os.path.isfile(PPR):
     ppr_dict = makeDict(PPR)
 else:
@@ -237,40 +237,47 @@ else:
 
 print('load pen')
 
+# если файла ПЕН нет, используем пустой справочник, иначе загружаем справочник из файла
 if os.path.isfile(PEN):
     pen_dict = makeDict(PEN)
 else:
     pen_dict = {}
 
 # создаем книгу для записи ненайденных ИД
+if not os.path.isdir(DIFF_PATH):
+    os.mkdir(DIFF_PATH)
+
 notFoundId = fileExcel(DIFF_PATH + 'no_id_kur_in_ppr_pen.xlsx')
 notFoundId.create('not found')
 
-# проходим по списку файлов кураторов
+# получаем список файлов кураторов и обрабатываем каждый файл
 for fl in listFiles(BASE_DIR):
     print('processing {0}'.format(fl))
 
+    # если файл с макросами, то окрываем с заданными параметрами
     if fl.endswith('.xlsm'):
         wb = load_workbook(fl, read_only = False, keep_vba = True)
     else:
         wb = load_workbook(fl)
+
+    # выбираем активный лист
     sh = wb.active
 
-    # нужно пропустить три строки
+    # нужно пропустить строки до Идентификатора
     enable_work = False
+    # проходим циклом по всем строкам в текущем файле куратора
     for row in sh.iter_rows():
 
         if enable_work:
-            key = row[0].value
+            key = row[0].value      # запоминаем текущий идентификатор
 
             if key in ppr_dict:
-                # есть идентификатор в ппр
+                # текущий идентификатор есть в ппр
                 notFoundInPpr = False
 
+                # проходи циклом по массиву индексов заменяемых ячееек
                 for index in PPR_INDEX_I:
-
-                    if row[index - 1].value != ppr_dict[key][index - 1]:
-                        row[index - 1].value = ppr_dict[key][index - 1]
+                    row[index - 1].value = ppr_dict[key][index - 1]
             else:
                 notFoundInPpr = True
 
@@ -279,9 +286,7 @@ for fl in listFiles(BASE_DIR):
                 notFoundInPen = False
 
                 for index in PEN_INDEX_I:
-
-                    if row[index - 1].value != pen_dict[key][index - 1]:
-                        row[index - 1].value = pen_dict[key][index - 1]
+                    row[index - 1].value = pen_dict[key][index - 1]
             else:
                 notFoundInPen = True
 
@@ -307,9 +312,6 @@ del ppr_dict
 print('load kurators:')
 kurators_dict = kuratorsDict()
 kurators_dict.load()
-
-if not os.path.isdir(DIFF_PATH):
-    os.mkdir(DIFF_PATH)
 
 if os.path.isfile(PPR):
     ppr = kuratorsCheck(PPR, PPR_OUT, DIFF_PATH + 'no_id_ppr_in_kur.xlsx', kurators_dict)
