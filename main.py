@@ -45,13 +45,22 @@ def makeDict(filename):
     data = {} 
     # нужно пропустить три строки
     enable_add = False
+    need_len = 0
+
     for row in sh.iter_rows():
     
         if enable_add:
             data[row[0].value] = [cell.value for cell in row]
+            curr_len = len(data[row[0].value])
+
+            if curr_len < need_len:
+                # выравниваем размер массива
+                data[row[0].value].extend(['' for i in range(need_len - curr_len)])
+
             continue
 
         if len(row) > 0 and row[0].value == 'Идентификатор':
+            need_len = len(row)
             enable_add = True
 
     wb.close()
@@ -162,6 +171,7 @@ class kuratorsCheck(object):
         print('seek')
         i = 0
         enable_seek = False
+        need_len = 0
 
         for row in self.sh.iter_rows():
             # если в cтроке нет элементов, пропускаем
@@ -181,6 +191,9 @@ class kuratorsCheck(object):
                 if found:
                     new_row = [cell.value for cell in row]
 
+                    if len(new_row) < need_len:
+                        new_row.extend(['' for i in range(need_len - len(new_row))])
+
                     for index in indexCells:
                         new_row[index - 1] = found[index - 1]
 
@@ -193,6 +206,7 @@ class kuratorsCheck(object):
                 continue                
 
             if key == 'Идентификатор':
+                need_len = len(row)
                 enable_seek = True
 
             # копируем шапку со стилями
@@ -282,11 +296,16 @@ def updateKurators():
 
         # нужно пропустить строки до Идентификатора
         enable_work = False
+        need_len = 0
+
         # проходим циклом по всем строкам в текущем файле куратора
         for row in sh.iter_rows():
 
             if enable_work:
                 key = row[0].value      # запоминаем текущий идентификатор
+
+                if len(row) < need_len:
+                    row.extend(['' for i in range(need_len - len(row))])
 
                 if key in ppr_dict:
                     # текущий идентификатор есть в ппр
@@ -294,11 +313,7 @@ def updateKurators():
 
                     # проходи циклом по массиву индексов заменяемых ячееек
                     for index in PPR_INDEX_I:
-                        try:
-                            row[index - 1].value = ppr_dict[key][index - 1]
-                        except IndexError:
-                            print("key = {3} len(row) = {0}, len(dict) = {1} index = {2}".format(len(row), len(ppr_dict[key]), index, key))
-                            exit()
+                        row[index - 1].value = ppr_dict[key][index - 1]
                 else:
                     notFoundInPpr = True
 
@@ -317,6 +332,7 @@ def updateKurators():
                 continue
 
             if row[0].value == 'Идентификатор':
+                need_len = len(row)
                 enable_work = True
 
         out_filename = makeOut(fl)
