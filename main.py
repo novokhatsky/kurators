@@ -227,101 +227,110 @@ class kuratorsCheck(object):
         self.fileOut.save()
 
 
-print('load ppr')
+def updatePprPen():
+    print('load kurators:')
+    kurators_dict = kuratorsDict()
+    kurators_dict.load()
 
-# если файла ППР нет, используем пустой справочник, иначе загружаем справочник из файла
-if os.path.isfile(PPR):
-    ppr_dict = makeDict(PPR)
-else:
-    ppr_dict = {}
+    if os.path.isfile(PPR):
+        ppr = kuratorsCheck(PPR, PPR_OUT, DIFF_PATH + 'no_id_ppr_in_kur.xlsx', kurators_dict)
+        ppr.seekChange(PPR_INDEX_II)
+        ppr.save()
 
-print('load pen')
+    if os.path.isfile(PEN):
+        pen = kuratorsCheck(PEN, PEN_OUT, DIFF_PATH + 'no_id_pen_in_kur.xlsx', kurators_dict)
+        pen.seekChange(PEN_INDEX_II)
+        pen.save()
 
-# если файла ПЕН нет, используем пустой справочник, иначе загружаем справочник из файла
-if os.path.isfile(PEN):
-    pen_dict = makeDict(PEN)
-else:
-    pen_dict = {}
 
-# создаем книгу для записи ненайденных ИД
-if not os.path.isdir(DIFF_PATH):
-    os.mkdir(DIFF_PATH)
+def updateKurators():
+    print('load ppr')
 
-notFoundId = fileExcel(DIFF_PATH + 'no_id_kur_in_ppr_pen.xlsx')
-notFoundId.create('not found')
-
-# получаем список файлов кураторов и обрабатываем каждый файл
-for fl in listFiles(BASE_DIR):
-    print('processing {0}'.format(fl))
-
-    # если файл с макросами, то окрываем с заданными параметрами
-    if fl.endswith('.xlsm'):
-        wb = load_workbook(fl, read_only = False, keep_vba = True)
+    # если файла ППР нет, используем пустой справочник, иначе загружаем справочник из файла
+    if os.path.isfile(PPR):
+        ppr_dict = makeDict(PPR)
     else:
-        wb = load_workbook(fl)
+        ppr_dict = {}
 
-    # выбираем активный лист
-    sh = wb.active
+    print('load pen')
 
-    # нужно пропустить строки до Идентификатора
-    enable_work = False
-    # проходим циклом по всем строкам в текущем файле куратора
-    for row in sh.iter_rows():
+    # если файла ПЕН нет, используем пустой справочник, иначе загружаем справочник из файла
+    if os.path.isfile(PEN):
+        pen_dict = makeDict(PEN)
+    else:
+        pen_dict = {}
 
-        if enable_work:
-            key = row[0].value      # запоминаем текущий идентификатор
+    # создаем книгу для записи ненайденных ИД
+    if not os.path.isdir(DIFF_PATH):
+        os.mkdir(DIFF_PATH)
 
-            if key in ppr_dict:
-                # текущий идентификатор есть в ппр
-                notFoundInPpr = False
+    notFoundId = fileExcel(DIFF_PATH + 'no_id_kur_in_ppr_pen.xlsx')
+    notFoundId.create('not found')
 
-                # проходи циклом по массиву индексов заменяемых ячееек
-                for index in PPR_INDEX_I:
-                    row[index - 1].value = ppr_dict[key][index - 1]
-            else:
-                notFoundInPpr = True
+    # получаем список файлов кураторов и обрабатываем каждый файл
+    for fl in listFiles(BASE_DIR):
+        print('processing {0}'.format(fl))
 
-            if key in pen_dict:
-                # есть идентификатор в ппр
-                notFoundInPen = False
+        # если файл с макросами, то окрываем с заданными параметрами
+        if fl.endswith('.xlsm'):
+            wb = load_workbook(fl, read_only = False, keep_vba = True)
+        else:
+            wb = load_workbook(fl)
 
-                for index in PEN_INDEX_I:
-                    row[index - 1].value = pen_dict[key][index - 1]
-            else:
-                notFoundInPen = True
+        # выбираем активный лист
+        sh = wb.active
 
-            if notFoundInPen and notFoundInPpr:
-                notFoundId.append([key, fl.replace(BASE_DIR, '')])
+        # нужно пропустить строки до Идентификатора
+        enable_work = False
+        # проходим циклом по всем строкам в текущем файле куратора
+        for row in sh.iter_rows():
 
-            continue
+            if enable_work:
+                key = row[0].value      # запоминаем текущий идентификатор
 
-        if row[0].value == 'Идентификатор':
-            enable_work = True
+                if key in ppr_dict:
+                    # текущий идентификатор есть в ппр
+                    notFoundInPpr = False
 
-    out_filename = makeOut(fl)
+                    # проходи циклом по массиву индексов заменяемых ячееек
+                    for index in PPR_INDEX_I:
+                        row[index - 1].value = ppr_dict[key][index - 1]
+                else:
+                    notFoundInPpr = True
 
-    sh['Y1'] = currDateTime()
-    print("save {0}".format(out_filename))
-    wb.save(out_filename)
+                if key in pen_dict:
+                    # есть идентификатор в ппр
+                    notFoundInPen = False
 
-notFoundId.save()
-del notFoundId
-del pen_dict
-del ppr_dict
+                    for index in PEN_INDEX_I:
+                        row[index - 1].value = pen_dict[key][index - 1]
+                else:
+                    notFoundInPen = True
 
-print('load kurators:')
-kurators_dict = kuratorsDict()
-kurators_dict.load()
+                if notFoundInPen and notFoundInPpr:
+                    notFoundId.append([key, fl.replace(BASE_DIR, '')])
 
-if os.path.isfile(PPR):
-    ppr = kuratorsCheck(PPR, PPR_OUT, DIFF_PATH + 'no_id_ppr_in_kur.xlsx', kurators_dict)
-    ppr.seekChange(PPR_INDEX_II)
-    ppr.save()
+                continue
 
-if os.path.isfile(PEN):
-    pen = kuratorsCheck(PEN, PEN_OUT, DIFF_PATH + 'no_id_pen_in_kur.xlsx', kurators_dict)
-    pen.seekChange(PEN_INDEX_II)
-    pen.save()
+            if row[0].value == 'Идентификатор':
+                enable_work = True
+
+        out_filename = makeOut(fl)
+
+        sh['Y1'] = currDateTime()
+        print("save {0}".format(out_filename))
+        wb.save(out_filename)
+
+    notFoundId.save()
+    del notFoundId
+    del pen_dict
+    del ppr_dict
+
+# первый этап: перенос данных из ППР/ПЭН в файлы кураторов
+updateKurators()
+
+# второй этап: перенос данных из файлов кураторов в ППР и ПЭН
+updatePprPen()
 
 # создание резервной копии с датой
 makeBackup()
