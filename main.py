@@ -39,6 +39,26 @@ def makeOut(filename):
     return BASE_OUT + el[-1]
 
 
+class WrongHeader(Exception):
+    def __init__(self, org, curr, message = ''):
+        self.org = org
+        self.curr = curr
+        self.message = "несовпадение колонки '{0}' и '{1}'".format(org, curr)
+
+
+    def __str__(self):
+        return self.message 
+
+def checkHeader(header):
+    if checkHeader.template == []:
+        checkHeader.template = header
+        return
+
+    for i in range(len(checkHeader.template)):
+        if checkHeader.template[i] != header[i]:
+            raise WrongHeader(checkHeader.template[i], header[i]) 
+            
+
 def makeDict(filename):
     wb = load_workbook(filename, read_only = True)
     sh = wb.active
@@ -62,6 +82,15 @@ def makeDict(filename):
         if len(row) > 0 and row[0].value == 'Идентификатор':
             need_len = len(row)
             enable_add = True
+
+            try:
+                checkHeader([cell.value for cell in row])
+            except WrongHeader as e:
+                print("ошибка в файле {0}".format(filename))
+                print(e.message)
+                print("Для выхода нажмите Enter")
+                input()
+                exit()
 
     wb.close()
 
@@ -166,6 +195,7 @@ class kuratorsCheck(object):
         # создание словаря кураторов
         self.dicts = dicts
 
+        self.fileIn = fileIn
 
     def seekChange(self, indexCells):
         print('seek')
@@ -208,6 +238,15 @@ class kuratorsCheck(object):
             if key == 'Идентификатор':
                 need_len = len(row)
                 enable_seek = True
+
+                try:
+                    checkHeader([cell.value for cell in row])
+                except WrongHeader as e:
+                    print("ошибка в файле {0}".format(self.fileIn))
+                    print(e.message)
+                    print("Для выхода нажмите Enter")
+                    input()
+                    exit()
 
             # копируем шапку со стилями
             new_row = []
@@ -335,6 +374,16 @@ def updateKurators():
                 need_len = len(row)
                 enable_work = True
 
+                try:
+                    checkHeader([cell.value for cell in row])
+                except WrongHeader as e:
+                    print("ошибка в файле {0}".format(fl))
+                    print(e.message)
+                    print("Для выхода нажмите Enter")
+                    input()
+                    exit()
+
+
         out_filename = makeOut(fl)
 
         sh['Y1'] = currDateTime()
@@ -345,6 +394,8 @@ def updateKurators():
     del notFoundId
     del pen_dict
     del ppr_dict
+
+checkHeader.template = []
 
 # первый этап: перенос данных из ППР/ПЭН в файлы кураторов
 updateKurators()
