@@ -32,6 +32,7 @@ PEN_INDEX_I = [21, 22, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 4
 PPR_INDEX_II = [19, 20, 50, 51, 52, 53, 54, 55, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98]
 PEN_INDEX_II = [19, 20, 50, 51, 52, 53, 54, 55, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98]
 
+CHECK_HEADER = 84
 
 def makeOut(filename):
     el = filename.split("\\")
@@ -45,24 +46,53 @@ class WrongHeader(Exception):
         self.curr = curr
         self.message = "несовпадение колонки '{0}' и '{1}'".format(org, curr)
 
+    def __str__(self):
+        return self.message 
+
+
+class NotUnique(Exception):
+    def __init__(self, value, message = ''):
+        self.value = value
+        self.message = "неуникальное значение '{0}'".format(self.value)
 
     def __str__(self):
         return self.message 
+
+
+class Unique():
+    def __init__(self):
+        self.data = []
+
+    def add(self, value):
+        if value in self.data:
+            raise NotUnique(value)
+        
+        self.data.append(value)
+
 
 def checkHeader(header):
     if checkHeader.template == []:
         checkHeader.template = header
         return
 
-    for i in range(len(checkHeader.template)):
+    for i in range(CHECK_HEADER):
         if checkHeader.template[i] != header[i]:
             raise WrongHeader(checkHeader.template[i], header[i]) 
             
 
+def ExitWMessage(message):
+    print(message)
+    input("Для выхода нажмите Enter")
+    exit()
+
+
 def makeDict(filename):
     wb = load_workbook(filename, read_only = True)
     sh = wb.active
-    data = {} 
+    data = {}
+
+    unique = Unique()
+
     # нужно пропустить три строки
     enable_add = False
     need_len = 0
@@ -70,6 +100,12 @@ def makeDict(filename):
     for row in sh.iter_rows():
     
         if enable_add:
+
+            try:
+                unique.add(row[0].value)
+            except NotUnique as e:
+                ExitWMessage("ошибка в файле {0}\n{1}".format(filename, e.message))
+
             data[row[0].value] = [cell.value for cell in row]
             curr_len = len(data[row[0].value])
 
@@ -86,11 +122,7 @@ def makeDict(filename):
             try:
                 checkHeader([cell.value for cell in row])
             except WrongHeader as e:
-                print("ошибка в файле {0}".format(filename))
-                print(e.message)
-                print("Для выхода нажмите Enter")
-                input()
-                exit()
+                ExitWMessage("ошибка в файле {0}\n{1}".format(filename, e.message))
 
     wb.close()
 
@@ -116,8 +148,8 @@ def makeBackup():
     fullFileBackup = BACKUP_PATH + date.today().isoformat()
 
     if os.path.isdir(fullFileBackup):
-        print("exists")
-        exit()
+        print("на текущее число копия уже есть")
+        return
 
     # создаем каталог и переносим все вайлы из in
     shutil.copytree(BASE_DIR, fullFileBackup)
@@ -200,6 +232,7 @@ class kuratorsCheck(object):
     def seekChange(self, indexCells):
         print('seek')
         i = 0
+        unique = Unique()
         enable_seek = False
         need_len = 0
 
@@ -215,6 +248,11 @@ class kuratorsCheck(object):
             key = row[0].value
 
             if enable_seek:
+
+                try:
+                    unique.add(row[0].value)
+                except NotUnique as e:
+                    ExitWMessage("ошибка в файле {0}\n{1}".format(self.fileIn, e.message))
 
                 found = self.dicts.seekkey(key)
 
@@ -242,11 +280,7 @@ class kuratorsCheck(object):
                 try:
                     checkHeader([cell.value for cell in row])
                 except WrongHeader as e:
-                    print("ошибка в файле {0}".format(self.fileIn))
-                    print(e.message)
-                    print("Для выхода нажмите Enter")
-                    input()
-                    exit()
+                    ExitWMessage("ошибка в файле {0}\n{1}".format(self.fileIn, e.message))
 
             # копируем шапку со стилями
             new_row = []
@@ -324,6 +358,8 @@ def updateKurators():
     for fl in listFiles(BASE_DIR):
         print('processing {0}'.format(fl))
 
+        unique = Unique()
+
         # если файл с макросами, то окрываем с заданными параметрами
         if fl.endswith('.xlsm'):
             wb = load_workbook(fl, read_only = False, keep_vba = True)
@@ -342,6 +378,11 @@ def updateKurators():
 
             if enable_work:
                 key = row[0].value      # запоминаем текущий идентификатор
+
+                try:
+                    unique.add(key)
+                except NotUnique as e:
+                    ExitWMessage("ошибка в файле {0}\n{1}".format(fl, e.message))
 
                 if len(row) < need_len:
                     row.extend(['' for i in range(need_len - len(row))])
@@ -377,14 +418,12 @@ def updateKurators():
                 try:
                     checkHeader([cell.value for cell in row])
                 except WrongHeader as e:
-                    print("ошибка в файле {0}".format(fl))
-                    print(e.message)
-                    print("Для выхода нажмите Enter")
-                    input()
-                    exit()
+                    ExitWMessage("ошибка в файле {0}\n{1}".format(fl, e.message))
 
 
         out_filename = makeOut(fl)
+
+        del(unique)
 
         sh['Y1'] = currDateTime()
         print("save {0}".format(out_filename))
@@ -405,4 +444,6 @@ updatePprPen()
 
 # создание резервной копии с датой
 makeBackup()
+
+ExitWMessage("Обработка файлов завершена\n")
 
