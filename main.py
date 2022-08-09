@@ -65,6 +65,9 @@ class Unique():
         self.data = []
 
     def add(self, value):
+        if value is None:
+            return
+
         if value in self.data:
             raise NotUnique(value)
         
