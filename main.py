@@ -41,10 +41,11 @@ def makeOut(filename):
 
 
 class WrongHeader(Exception):
-    def __init__(self, org, curr, message = ''):
+    def __init__(self, org, curr, pos, message = ''):
         self.org = org
         self.curr = curr
-        self.message = "несовпадение колонки '{0}' и '{1}'".format(org, curr)
+        self.pos = pos + 1 
+        self.message = "несовпадение названия колонки {2}, образец: '{0}' текущее: '{1}'".format(self.org, self.curr, self.pos)
 
     def __str__(self):
         return self.message 
@@ -77,7 +78,7 @@ def checkHeader(header):
 
     for i in range(CHECK_HEADER):
         if checkHeader.template[i] != header[i]:
-            raise WrongHeader(checkHeader.template[i], header[i]) 
+            raise WrongHeader(checkHeader.template[i], header[i], i) 
             
 
 def ExitWMessage(message):
@@ -90,7 +91,7 @@ def makeDict(filename):
     wb = load_workbook(filename, read_only = True)
     sh = wb.active
     data = {}
-
+    num_str = 0
     unique = Unique()
 
     # нужно пропустить три строки
@@ -98,13 +99,14 @@ def makeDict(filename):
     need_len = 0
 
     for row in sh.iter_rows():
+        num_str += 1
     
         if enable_add:
 
             try:
                 unique.add(row[0].value)
             except NotUnique as e:
-                ExitWMessage("ошибка в файле {0}\n{1}".format(filename, e.message))
+                ExitWMessage("ошибка в файле {0} в строке {2}\n{1}".format(filename, e.message, num_str))
 
             data[row[0].value] = [cell.value for cell in row]
             curr_len = len(data[row[0].value])
@@ -196,7 +198,7 @@ class kuratorsDict(object):
 
     def load(self):
         for fl in listFiles(BASE_OUT):
-            print('load {0}'.format(fl))
+            print('загрузка {0}'.format(fl))
             self.dicts.append(makeDict(fl))
 
 
@@ -212,7 +214,7 @@ class kuratorsDict(object):
 
 class kuratorsCheck(object):
     def __init__(self, fileIn, fileOut, notFound, dicts):
-        print('load ' + fileIn)
+        print('загрузка ' + fileIn)
         self.wb = load_workbook(fileIn, read_only = True)
         self.sh = self.wb.active
 
@@ -230,7 +232,7 @@ class kuratorsCheck(object):
         self.fileIn = fileIn
 
     def seekChange(self, indexCells):
-        print('seek')
+        print('поиск')
         i = 0
         unique = Unique()
         enable_seek = False
@@ -243,7 +245,7 @@ class kuratorsCheck(object):
 
             i += 1
             if i % 500 == 0:
-                print('left {0}'.format(i))
+                print('обработано {0}'.format(i))
 
             key = row[0].value
 
@@ -303,7 +305,7 @@ class kuratorsCheck(object):
 
             self.fileOut.append([cell for cell in new_row])
 
-        print('end of {0}'.format(i))
+        print('завершено на {0}'.format(i))
 
     def save(self):
         print('save')
@@ -315,7 +317,7 @@ class kuratorsCheck(object):
 
 
 def updatePprPen():
-    print('load kurators:')
+    print('загрузка файлов кураторов:')
     kurators_dict = kuratorsDict()
     kurators_dict.load()
 
@@ -331,21 +333,28 @@ def updatePprPen():
 
 
 def updateKurators():
-    print('load ppr')
 
     # если файла ППР нет, используем пустой справочник, иначе загружаем справочник из файла
     if os.path.isfile(PPR):
+        print('загрузка {0}, используем название столбцов как образец'.format(PPR))
         ppr_dict = makeDict(PPR)
     else:
         ppr_dict = {}
 
-    print('load pen')
 
     # если файла ПЕН нет, используем пустой справочник, иначе загружаем справочник из файла
     if os.path.isfile(PEN):
+        if ppr_dict:
+            print('загрузка {0}'.format(PEN))
+        else:
+            print('загрузка {0}, используем название столбцов как образец'.format(PEN))
+        
         pen_dict = makeDict(PEN)
     else:
         pen_dict = {}
+
+    if not pen_dict and not ppr_dict:
+        ExitWMessage('отсутствуют файлы ПЭН и ППР')
 
     # создаем книгу для записи ненайденных ИД
     if not os.path.isdir(DIFF_PATH):
@@ -356,7 +365,7 @@ def updateKurators():
 
     # получаем список файлов кураторов и обрабатываем каждый файл
     for fl in listFiles(BASE_DIR):
-        print('processing {0}'.format(fl))
+        print('обработка {0}'.format(fl))
 
         unique = Unique()
 
@@ -426,7 +435,7 @@ def updateKurators():
         del(unique)
 
         sh['Y1'] = currDateTime()
-        print("save {0}".format(out_filename))
+        print("сохранение {0}".format(out_filename))
         wb.save(out_filename)
 
     notFoundId.save()
