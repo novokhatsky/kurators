@@ -91,7 +91,7 @@ def ExitWMessage(message):
 
 
 def makeDict(filename):
-    wb = load_workbook(filename, read_only = True)
+    wb = load_workbook(filename, read_only = True, , data_only = True)
     sh = wb.active
     data = {}
     num_str = 0
@@ -218,7 +218,7 @@ class kuratorsDict(object):
 class kuratorsCheck(object):
     def __init__(self, fileIn, fileOut, notFound, dicts):
         print('загрузка ' + fileIn)
-        self.wb = load_workbook(fileIn, read_only = True)
+        self.wb = load_workbook(fileIn, read_only = True, data_only = True)
         self.sh = self.wb.active
 
         # создаем книгу для создания нового файла ПЭН или ППР
@@ -374,9 +374,9 @@ def updateKurators():
 
         # если файл с макросами, то окрываем с заданными параметрами
         if fl.endswith('.xlsm'):
-            wb = load_workbook(fl, read_only = False, keep_vba = True)
+            wb = load_workbook(fl, read_only = False, keep_vba = True, data_only = True)
         else:
-            wb = load_workbook(fl)
+            wb = load_workbook(fl, data_only = True)
 
         # выбираем активный лист
         sh = wb.active

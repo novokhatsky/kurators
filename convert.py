@@ -17,7 +17,7 @@ OUTFILE =  'd:\\tmp\\rubcov\\2.csv'
 DELIMENTER = '~'
 NAMESHEET = 'TDSheet'
 
-wb = load_workbook(FILENAME, read_only = True)
+wb = load_workbook(FILENAME, read_only = True, data_only = True)
 sh = wb[NAMESHEET]
 
 i = 0
