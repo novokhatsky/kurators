@@ -9,12 +9,12 @@ from datetime import datetime
 import shutil
 import traceback
 
-#BASE_DIR = "d:\\work\\in\\"
-#BASE_OUT = "d:\\work\\out\\"
-#BACKUP_PATH = "d:\\work\\backup\\"
-BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
-BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
-BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
+BASE_DIR = "d:\\work\\in\\"
+BASE_OUT = "d:\\work\\out\\"
+BACKUP_PATH = "d:\\work\\backup\\"
+#BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
+#BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
+#BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
 
 DIFF_PATH = BASE_OUT + "diff\\"
 
@@ -91,7 +91,7 @@ def ExitWMessage(message):
 
 
 def makeDict(filename):
-    wb = load_workbook(filename, read_only = True, , data_only = True)
+    wb = load_workbook(filename, read_only = True, data_only = True)
     sh = wb.active
     data = {}
     num_str = 0
