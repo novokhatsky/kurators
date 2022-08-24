@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 from openpyxl import load_workbook, Workbook
 from openpyxl.cell import WriteOnlyCell
@@ -9,12 +9,12 @@ from datetime import datetime
 import shutil
 import traceback
 
-BASE_DIR = "d:\\work\\in\\"
-BASE_OUT = "d:\\work\\out\\"
-BACKUP_PATH = "d:\\work\\backup\\"
-#BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
-#BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
-#BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
+#BASE_DIR = "d:\\work\\in\\"
+#BASE_OUT = "d:\\work\\out\\"
+#BACKUP_PATH = "d:\\work\\backup\\"
+BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
+BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
+BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
 
 DIFF_PATH = BASE_OUT + "diff\\"
 
@@ -25,14 +25,14 @@ PPR_OUT = BASE_OUT + "пэн-ппр\\ППР.xlsx"
 PEN_OUT = BASE_OUT + "пэн-ппр\\ПЭН.xlsx"
 
 # поля которые переносятся из ПЭН и ППР в файлы кураторов
-PPR_INDEX_I = [21, 22, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 74]
-PEN_INDEX_I = [21, 22, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 74]
+PPR_INDEX_I = [24, 25, 26, 27, 28, 33, 34, 35, 36, 37, 38, 39, 53, 54, 55, 56, 57, 58]
+PEN_INDEX_I = [24, 25, 26, 27, 28, 33, 34, 35, 36, 37, 38, 39, 53, 54, 55, 56, 57, 58]
 
 # поля которые переносятся из кураторов в ПЭН и ППР
-PPR_INDEX_II = [19, 20, 50, 51, 52, 53, 54, 55, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98]
-PEN_INDEX_II = [19, 20, 50, 51, 52, 53, 54, 55, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98]
+PPR_INDEX_II = [29, 30, 31, 32, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75]
+PEN_INDEX_II = [29, 30, 31, 32, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75]
 
-CHECK_HEADER = 84
+CHECK_HEADER = 75
 
 def makeOut(filename):
     el = filename.split("\\")
