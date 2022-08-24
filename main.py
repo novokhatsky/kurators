@@ -446,7 +446,22 @@ def updateKurators():
     del pen_dict
     del ppr_dict
 
+
+def prepare_dirs():
+    # удаляем файлы ПЭН и ППР из каталога in
+    if os.path.isfile(BASE_DIR + "ПЭН.xlsx"):
+        os.remove(BASE_DIR + "ПЭН.xlsx")
+
+    if os.path.isfile(BASE_DIR + "ППР.xlsx"):
+        os.remove(BASE_DIR + "ППР.xlsx")
+
+    # проверяем чтобы в каталоге out был каталог пэн-ппр
+    if not os.path.isdir(BASE_OUT + "пэн-ппр\\"):
+        os.mkdir(BASE_OUT + "пэн-ппр\\")
+
 checkHeader.template = []
+
+prepare_dirs()
 
 # первый этап: перенос данных из ППР/ПЭН в файлы кураторов
 updateKurators()
