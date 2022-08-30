@@ -9,12 +9,12 @@ from datetime import datetime
 import shutil
 import traceback
 
-#BASE_DIR = "d:\\work\\in\\"
-#BASE_OUT = "d:\\work\\out\\"
-#BACKUP_PATH = "d:\\work\\backup\\"
-BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
-BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
-BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
+BASE_DIR = "d:\\work\\in\\"
+BASE_OUT = "d:\\work\\out\\"
+BACKUP_PATH = "d:\\work\\backup\\"
+#BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
+#BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
+#BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
 
 DIFF_PATH = BASE_OUT + "diff\\"
 
@@ -405,7 +405,11 @@ def updateKurators():
 
                     # проходи циклом по массиву индексов заменяемых ячееек
                     for index in PPR_INDEX_I:
-                        row[index - 1].value = ppr_dict[key][index - 1]
+                        try:
+                            row[index - 1].value = ppr_dict[key][index - 1]
+                        except BaseException as err:
+                            ExitWMessage("идентификатор: {0} столбец: {1}\nошибка: {2}".format(key, index, err))
+                            
                 else:
                     notFoundInPpr = True
 
@@ -414,7 +418,11 @@ def updateKurators():
                     notFoundInPen = False
 
                     for index in PEN_INDEX_I:
-                        row[index - 1].value = pen_dict[key][index - 1]
+                        try:
+                            row[index - 1].value = pen_dict[key][index - 1]
+                        except BaseException as err:
+                            ExitWMessage("идентификатор: {0} столбец: {1}\nошибка: {2}".format(key, index, err))
+
                 else:
                     notFoundInPen = True
 
