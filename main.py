@@ -11,12 +11,12 @@ import traceback
 import warnings
 warnings.filterwarnings('error')
 
-#BASE_DIR = "d:\\work\\in\\"
-#BASE_OUT = "d:\\work\\out\\"
-#BACKUP_PATH = "d:\\work\\backup\\"
-BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
-BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
-BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
+BASE_DIR = "I:\\КОНФ_СВЕД\\Возвратный план ПЭН\\2022\\!Возвратный план\\work\\in\\"
+BASE_OUT = "I:\\КОНФ_СВЕД\\Возвратный план ПЭН\\2022\\!Возвратный план\\work\\out\\"
+BACKUP_PATH = "I:\\КОНФ_СВЕД\\Возвратный план ПЭН\\2022\\!Возвратный план\\work\\backup\\"
+#BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
+#BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
+#BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
 
 DIFF_PATH = BASE_OUT + "diff\\"
 
@@ -27,14 +27,14 @@ PPR_OUT = BASE_OUT + "пэн-ппр\\ППР.xlsx"
 PEN_OUT = BASE_OUT + "пэн-ппр\\ПЭН.xlsx"
 
 # поля которые переносятся из ПЭН и ППР в файлы кураторов
-PPR_INDEX_I = [24, 25, 26, 27, 28, 33, 34, 35, 36, 37, 38, 39, 53, 54, 55, 56, 57, 58]
-PEN_INDEX_I = [24, 25, 26, 27, 28, 33, 34, 35, 36, 37, 38, 39, 53, 54, 55, 56, 57, 58]
+PPR_INDEX_I = [25, 26, 27, 28, 29, 34, 35, 36, 37, 38, 39, 40, 54, 55, 56, 57, 58, 59]
+PEN_INDEX_I = [25, 26, 27, 28, 29, 34, 35, 36, 37, 38, 39, 40, 54, 55, 56, 57, 58, 59]
 
 # поля которые переносятся из кураторов в ПЭН и ППР
-PPR_INDEX_II = [29, 30, 31, 32, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75]
-PEN_INDEX_II = [29, 30, 31, 32, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75]
+PPR_INDEX_II = [30, 31, 32, 33, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76]
+PEN_INDEX_II = [30, 31, 32, 33, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76]
 
-CHECK_HEADER = 75
+CHECK_HEADER = 76
 
 def makeOut(filename):
     el = filename.split("\\")
@@ -392,10 +392,8 @@ def updateKurators():
         enable_work = False
         need_len = 0
 
-        print("-")
         # проходим циклом по всем строкам в текущем файле куратора
         for row in sh.iter_rows():
-            print("0")
 
             if enable_work:
                 key = row[0].value      # запоминаем текущий идентификатор

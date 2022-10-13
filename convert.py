@@ -9,13 +9,13 @@ def getValue(val):
     if not val:
         return ''
 
-    return '{0}'.format(val)
+    return ('{0}'.format(val)).replace('\r', '').replace('\n', '').replace('~', '')
 
 
 FILENAME = 'd:\\tmp\\rubcov\\файл2.xlsx'
 OUTFILE =  'd:\\tmp\\rubcov\\2.csv'
 DELIMENTER = '~'
-NAMESHEET = 'TDSheet'
+NAMESHEET = 'Лист 1'
 
 wb = load_workbook(FILENAME, read_only = True, data_only = True)
 sh = wb[NAMESHEET]
