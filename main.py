@@ -8,13 +8,15 @@ from datetime import date
 from datetime import datetime
 import shutil
 import traceback
+import warnings
+warnings.filterwarnings('error')
 
-BASE_DIR = "d:\\work\\in\\"
-BASE_OUT = "d:\\work\\out\\"
-BACKUP_PATH = "d:\\work\\backup\\"
-#BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
-#BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
-#BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
+#BASE_DIR = "d:\\work\\in\\"
+#BASE_OUT = "d:\\work\\out\\"
+#BACKUP_PATH = "d:\\work\\backup\\"
+BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
+BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
+BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
 
 DIFF_PATH = BASE_OUT + "diff\\"
 
@@ -373,10 +375,15 @@ def updateKurators():
         unique = Unique()
 
         # если файл с макросами, то окрываем с заданными параметрами
-        if fl.endswith('.xlsm'):
-            wb = load_workbook(fl, read_only = False, keep_vba = True, data_only = True)
-        else:
-            wb = load_workbook(fl, data_only = True)
+        try: 
+            if fl.endswith('.xlsm'):
+                wb = load_workbook(fl, read_only = False, keep_vba = True, data_only = True)
+            else:
+                wb = load_workbook(fl, data_only = True)
+        except UserWarning as e:
+            mes = '{0}'.format(e)
+            s = mes.split(' ')
+            ExitWMessage('Ошибка в ячейке {0}'.format(s[1]))
 
         # выбираем активный лист
         sh = wb.active
@@ -385,8 +392,10 @@ def updateKurators():
         enable_work = False
         need_len = 0
 
+        print("-")
         # проходим циклом по всем строкам в текущем файле куратора
         for row in sh.iter_rows():
+            print("0")
 
             if enable_work:
                 key = row[0].value      # запоминаем текущий идентификатор
