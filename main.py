@@ -8,15 +8,15 @@ from datetime import date
 from datetime import datetime
 import shutil
 import traceback
-import warnings
-warnings.filterwarnings('error')
+#import warnings
+#warnings.filterwarnings('error')
 
-BASE_DIR = "I:\\КОНФ_СВЕД\\Возвратный план ПЭН\\2022\\!Возвратный план\\work\\in\\"
-BASE_OUT = "I:\\КОНФ_СВЕД\\Возвратный план ПЭН\\2022\\!Возвратный план\\work\\out\\"
-BACKUP_PATH = "I:\\КОНФ_СВЕД\\Возвратный план ПЭН\\2022\\!Возвратный план\\work\\backup\\"
-#BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
-#BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
-#BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
+#BASE_DIR = "I:\\КОНФ_СВЕД\\Возвратный план ПЭН\\2022\\!Возвратный план\\work\\in\\"
+#BASE_OUT = "I:\\КОНФ_СВЕД\\Возвратный план ПЭН\\2022\\!Возвратный план\\work\\out\\"
+#BACKUP_PATH = "I:\\КОНФ_СВЕД\\Возвратный план ПЭН\\2022\\!Возвратный план\\work\\backup\\"
+BASE_DIR = "d:\\tmp\\rubcov\\pro\\in\\"
+BASE_OUT = "d:\\tmp\\rubcov\\pro\\out\\"
+BACKUP_PATH = "d:\\tmp\\rubcov\\pro\\backup\\"
 
 DIFF_PATH = BASE_OUT + "diff\\"
 
@@ -82,7 +82,10 @@ def checkHeader(header):
         return
 
     for i in range(CHECK_HEADER):
-        if checkHeader.template[i] != header[i]:
+        if header[i] is None:
+            continue
+
+        if checkHeader.template[i].strip() != header[i].strip():
             raise WrongHeader(checkHeader.template[i], header[i], i) 
             
 
